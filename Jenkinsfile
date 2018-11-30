@@ -10,7 +10,7 @@ pipeline {
         LIB_PATH = ""
         CURRENT_STAGE = ""
         EUREKA_PORT = ""
-        BACKEND_TARGET = "/data/tea-api"
+        BACKEND_TARGET = "/data/tea_dev"
         VERSION_NAME = "1.0.0-SNAPSHOT"
         JAVA_OPTS="-Xmx256m"
         JENKINS_NODE_COOKIE = 'dontKillMe'
@@ -23,18 +23,18 @@ pipeline {
                     if (env.Target == 'EC2') {
                         INSTANCE_ID = "dev"
                         EUREKA_PORT= "1026"
-                        HOST_NAME = "172.31.6.46"
+                        HOST_NAME = "47.99.199.86"
                         SSH_HOST = "ubuntu@${HOST_NAME}"
                     } else if (env.Target == 'SCRCU') {
                         INSTANCE_ID = "prd"
                         EUREKA_PORT= "1025"
-                        HOST_NAME = "10.16.0.82"
+                        HOST_NAME = "47.99.199.86"
                         SSH_HOST = "root@${HOST_NAME}"
                     } else {
                         INSTANCE_ID = "dev"
                         EUREKA_PORT= "1026"
-                        HOST_NAME = "10.0.28.17"
-                        SSH_HOST = "ricky@${HOST_NAME}"
+                        HOST_NAME = "47.99.199.86"
+                        SSH_HOST = "root@${HOST_NAME}"
                     }
                 }
             }
