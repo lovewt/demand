@@ -1,0 +1,69 @@
+buildscript {
+	ext {
+		springBootVersion = '2.0.0.RELEASE'
+	}
+	repositories {
+        //maven { url "http://10.128.1.147/nexus/repository/maven-public" }
+        maven { url "http://10.16.0.82/nexus/repository/maven-public" }
+        //maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+//def repo = "http://10.128.1.147/nexus/repository"
+def repo = "http://10.16.0.82/nexus/repository"
+group = 'com.dcmd.service.demand'
+version = '1.0.0-SNAPSHOT'
+description = "dcmd-service-demand"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+tasks.withType(Jar) {
+    destinationDir = file("$rootDir/build")
+}
+
+repositories {
+     maven { url repo + "/maven-public" }
+}
+
+dependencies {
+    compile('com.dcmd.common.core:dcmd-common-core:1.0.0-SNAPSHOT') { changing = true }
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:Finchley.RELEASE"
+	}
+}
+
+jar {
+	enabled = true
+    manifest {
+        attributes 'Main-Class': 'com.dcmd.service.demand.DemandServiceApplication'
+    }
+}
+
+bootJar {
+	enabled = false
+	classifier = 'boot'
+}
+
+task copyLib(type: Copy) {
+    copy {
+        from configurations.runtime
+        into "$buildDir/lib"
+    }
+    doFirst {
+        if(inputs.empty) throw new GradleException("Input source for copyLib doesn't exist")
+    }
+}

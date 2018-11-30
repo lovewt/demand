@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dcmd.service.demand.mapper.FeaturesMapper">
+
+    <insert id="insert" parameterType="com.dcmd.service.demand.entity.Features" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO t_comp_features ( id, name, features_business, software_num, business_id )
+        VALUES
+              (#{id},#{name},#{featuresBusiness},#{softwareNum},#{businessId})
+    </insert>
+</mapper>

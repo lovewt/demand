@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dcmd.service.demand.mapper.SysParameterMapper">
+
+    <!-- 根据需求类型拿到对应的Markdown模板-->
+    <select id="findMarkdownByDemandType" parameterType="java.lang.Long" resultType="java.util.Map">
+        SELECT t.id AS value,t.key AS label,t.VALUE AS content
+        FROM t_sys_parameter t
+        WHERE parent =#{type}
+    </select>
+
+    <select id="getEntryLevelInfo" resultType="com.dcmd.service.demand.vo.ParameterVo">
+        SELECT
+            a.id AS value,
+            a.KEY AS label,
+            a.VALUE	AS content
+        FROM
+            t_sys_parameter a
+        WHERE
+            a.type = 'entryLevel'
+    </select>
+
+    <select id="getDemandStatusInfo" resultType="com.dcmd.service.demand.vo.ParameterVo" parameterType="java.lang.String">
+        SELECT
+            a.key AS value,
+            a.VALUE	AS label
+        FROM
+            t_sys_parameter a
+        WHERE
+            a.type = #{parameterType}
+    </select>
+</mapper>

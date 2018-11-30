@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dcmd.service.demand.mapper.DemandMapper">
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from t_comp_demand
+    where id = #{id}
+  </delete>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id"  parameterType="com.dcmd.service.demand.entity.Demand">
+    insert into t_comp_demand (id, type, demand_number,
+      label, demand_leader, status,
+      exp_res_time, product_module_id, business_id,
+      futures_business,create_time, update_time,entry,function_id,remarks)
+    values (#{id}, #{type}, #{demandNumber},
+      #{label}, #{demandLeader}, #{status},
+      #{expResTime}, #{productModuleId}, #{businessId},
+      #{futuresBusiness},#{createTime},#{updateTime},#{entry},#{functionId},#{remarks})
+  </insert>
+
+    <update id="updateByPrimaryKey" parameterType="com.dcmd.service.demand.entity.Demand">
+    update t_comp_demand
+    set type = #{type},
+      demand_number = #{demandNumber},
+      label = #{label},
+      demand_leader = #{demandLeader},
+      status = #{status},
+      exp_res_time = #{expResTime},
+      product_module_id = #{productModuleId},
+      business_id = #{businessId},
+      futures_business = #{futuresBusiness},
+      update_time =#{updateTime},
+      entry = #{entry},
+      function_id = #{functionId},
+      remarks = #{remarks}
+    where id = #{id}
+  </update>
+
+    <!--多条删除-->
+    <delete id="deleteIds">
+        DELETE FROM
+        t_comp_demand
+        where
+        id in
+        <foreach collection="array" item="item" index="index" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+    <!--查询类型参数key-->
+    <select id="queryKeyById"  resultType="String" parameterType="String">
+        SELECT p.key FROM t_sys_parameter p WHERE p.id=#{id}
+    </select>
+
+    <!--查询最大id数-->
+    <select id="queryByMaxId" resultType="String">
+    SELECT MAX(id) FROM t_comp_demand WHERE id LIKE CONCAT(#{name},'%')
+    </select>
+
+    <!--查询类型-->
+    <select id="queryByNameAll" resultType="java.util.Map">
+    SELECT p.id AS value,p.`value`AS label ,p.key  FROM t_sys_parameter p where p.type='DemandType'
+    </select>
+
+    <!--查询所有产品-->
+    <select id="queryProductAll" resultType="com.dcmd.service.demand.entity.Menu">
+	 	select id as "value",name as "label",pid as "pid" from t_product_model
+	 </select>
+
+    <!--查询模块-->
+    <select id="queryParentModule" resultType="com.dcmd.service.demand.entity.Menu">
+	 	select id as "value",name as "label",pid as "pid" from t_product_model where pid is null
+	 </select>
+
+    <select id="selectProductModuleName"  resultType="java.lang.String">
+        select GROUP_CONCAT(name) from t_product_model where id in
+        <foreach collection="array" item="item" index="index" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="queryProductModelById" parameterType="String" resultType="com.dcmd.service.demand.entity.Menu">
+        select id as "value",name as "label",pid as "pid" from t_product_model where pid=#{productId}
+    </select>
+
+
+    <!--查询所有，使用resultMap返回结果集，将数据组装成树形结构  -->
+    <select id="findAllByacceptStaffIdOrreviewStaffIdOrputStaffId" resultType="com.dcmd.service.demand.vo.DemandVo">
+        SELECT
+        tcd.futures_business AS futuresBusiness,
+        (select a.value from t_sys_parameter a where tcd.futures_business = a.key) AS futuresBusinessName,
+        tcd.remarks AS remarks,
+        tcd.id AS id,
+        tcd.type AS type,
+        tcd.entry AS entry,
+        ( select a.key from t_sys_parameter a where tcd.entry = a.id) AS entryLevelName,
+        tcd.function_id AS functionId,
+        (select a.name from t_comp_features a where a.id = tcd.function_id) AS functionName,
+        ( select a.value from t_sys_parameter a where a.type = 'DemandType' and a.key = tcd.type) AS typeName,
+        tcd.demand_number AS demandNumber,
+        tcd.label AS label,
+        (select  GROUP_CONCAT(name) AS labelName from t_sys_label
+        where id in
+        (select substring_index(substring_index(a.label,',',b.help_topic_id+1),',',-1) from t_comp_demand a
+        join  mysql.help_topic b on b.help_topic_id  &lt; (length(a.label) -     length(replace(a.label,',',''))+1)
+        where a.id=tcd.id  order by a.label)) AS labelName,
+        tcd.demand_leader AS demandLeader,
+        tcd.status AS status,
+        (select a.value from t_sys_parameter a  where tcd.status = a.key) AS statusName,
+        tcd.product_module_id AS productModuleId,
+        tcd.business_id  AS businessId,
+        (select GROUP_CONCAT(name)  from t_comp_business_level
+        where id in (
+        select substring_index(substring_index(a.business_id,',',b.help_topic_id+1),',',-1) from t_comp_demand a
+        join mysql.help_topic b  on b.help_topic_id &lt; (length(a.business_id) -     length(replace(a.business_id,',',''))+1)
+        where a.id=tcd.id order by a.business_id )) AS businessName,
+        DATE_FORMAT(tcd.exp_res_time,'%Y-%m-%d') AS expResTime,
+        DATE_FORMAT(tcd.create_time, '%Y-%m-%d %H:%m:%s') AS createTime,
+        DATE_FORMAT(tcd.update_time, '%Y-%m-%d %H:%m:%s') AS updateTime,
+        tcv.version_num AS versionNum,
+        tcv.demand_describe AS demandDescribe,
+        tcv.id AS versionId
+        FROM t_comp_demand AS tcd
+        INNER JOIN t_comp_version tcv
+        ON tcd.id = tcv.demand_id
+        where version_num =(SELECT MAX(version_num)	FROM t_comp_version	WHERE	demand_id = tcd.id)
+
+        ORDER BY tcd.update_time,tcd.create_time DESC
+	 </select>
+    <!--
+        WHERE 1=1
+    <if test="putStaffId !=null and putStaffId != ''">
+           AND tcd.put_staff_id = #{putStaffId}
+        </if>
+        <if test="acceptStaffId !=null and acceptStaffId != ''">
+            AND tcd.accept_staff_id = #{acceptStaffId}
+        </if>
+    <if test="reviewStaffId !=null and reviewStaffId != ''">
+            AND tcd.review_staff_id = #{reviewStaffId}
+        </if>
+        -->
+</mapper>

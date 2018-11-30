@@ -1,0 +1,69 @@
+spring:
+  application:
+    name: dcmd-service-demand
+  cloud:
+    config:
+      fail-fast: true
+      discovery:
+        service-id: dcit-config
+        enabled: true
+      profile: ${spring.profiles.active}
+  profiles:
+    active: dev
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 20
+  client:
+    #eureka client刷新本地缓存时间  默认30s
+    registry-fetch-interval-seconds: 5
+
+# 管理节点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info, health, metrics, shutdown
+  endpoint:
+    shutdown:
+      enabled: true
+
+---
+spring:
+  cloud:
+    config:
+      label: master
+  profiles: dev
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://dcit:dcit@localhost:1026/eureka
+    registry-fetch-interval-seconds: 10
+
+---
+spring:
+  cloud:
+    config:
+      label: master
+  profiles: prd
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://dcit:dcit@localhost:1025/eureka
+    registry-fetch-interval-seconds: 10
+
+---
+spring:
+  cloud:
+    config:
+      label: master
+  profiles: test
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://dcit:dcit@localhost:1027/eureka
+    registry-fetch-interval-seconds: 10
+
+
