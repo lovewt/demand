@@ -43,7 +43,7 @@ pipeline {
         stage("Build") {
             steps {
                 script {
-                    sh "gradle build"
+                    sh "mvn install; cd .."
                 }
             }
         }
